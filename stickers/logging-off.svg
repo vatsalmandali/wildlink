@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="240" height="240"><title>Logging off</title>
+<defs><filter id="s" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#000" flood-opacity=".22"/></filter></defs>
+<g transform="rotate(3 120 120)"><rect x="18" y="18" width="204" height="204" rx="48" fill="#2B3A67" stroke="#FFFFFF" stroke-width="10" filter="url(#s)"/>
+<path d="M138 44 a50 50 0 1 0 30 78 a40 40 0 1 1 -30 -78z" fill="#FFF3B0"/><circle cx="84" cy="56" r="4" fill="#FFF3B0"/><circle cx="160" cy="58" r="3" fill="#FFF3B0"/><circle cx="170" cy="100" r="4" fill="#FFF3B0"/>
+<text x="120" y="190" text-anchor="middle" font-family="'Segoe UI Black','Arial Black','Helvetica Neue',Arial,sans-serif" font-weight="900" font-size="26" fill="#FFFFFF" stroke="rgba(0,0,0,.18)" stroke-width="5" paint-order="stroke" letter-spacing="-.5">Logging off</text></g></svg>

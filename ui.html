@@ -1,0 +1,838 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wild Link</title>
+<link rel="icon" type="image/png" href="/icon.png">
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#000000; --panel:#141416; --panel2:#1C1C1E; --elev:#2C2C2E; --elev2:#3A3A3C;
+  --sep:rgba(120,120,128,.28); --text:#FFFFFF; --text2:#98989F; --text3:#68686E;
+  --blue:#0A84FF; --blue-press:#0872DB; --green:#30D158; --red:#FF453A; --orange:#FF9F0A;
+  --radius:18px;
+  font-family:-apple-system,"SF Pro Text","Segoe UI Variable Text","Segoe UI",system-ui,sans-serif;
+  font-size:15px;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--text);line-height:1.42;display:grid;grid-template-columns:284px 1fr;overflow:hidden;
+  -webkit-font-smoothing:antialiased}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:transparent}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:rgba(120,120,128,.32);border-radius:8px;border:3px solid transparent;background-clip:content-box}
+::-webkit-scrollbar-track{background:transparent}
+
+/* ---------- sidebar ---------- */
+aside{background:var(--panel);border-right:.5px solid var(--sep);display:flex;flex-direction:column;min-height:0}
+.brand{display:flex;align-items:center;gap:9px;padding:18px 18px 12px}
+.brand img{height:22px}
+.brand b{font-size:17px;font-weight:650;letter-spacing:-.3px}
+.me{display:flex;align-items:center;gap:10px;margin:0 10px 8px;padding:8px 10px;border-radius:12px;background:var(--panel2)}
+.me .who{flex:1;min-width:0}
+.me .name{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.me .sub{color:var(--text2);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.icon{display:grid;place-items:center;padding:7px;border-radius:9px;color:var(--text2)}
+.icon:hover{background:rgba(120,120,128,.18);color:var(--text)}
+.icon:disabled{opacity:.35;cursor:default}
+.list{flex:1;overflow-y:auto;padding:4px 10px 12px}
+.section{color:var(--text3);font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:14px 10px 6px}
+.conv{width:100%;display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:11px;text-align:left}
+.conv:hover{background:rgba(120,120,128,.14)}
+.conv[aria-current="true"]{background:var(--blue)}
+.conv[aria-current="true"] .label{color:#fff}
+.conv .label{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px;font-weight:500}
+.conv.offline .label{color:var(--text2)}
+.badge{background:var(--red);color:#fff;font-size:11px;font-weight:700;border-radius:11px;padding:1px 7px;min-width:21px;text-align:center}
+.conv[aria-current="true"] .badge{background:#fff;color:var(--blue)}
+.avatar{--h:210;width:32px;height:32px;border-radius:50%;flex:none;display:grid;place-items:center;font-weight:600;font-size:12.5px;
+  background:hsl(var(--h) 22% 30%);color:hsl(var(--h) 65% 84%);position:relative}
+.avatar.all{background:var(--elev)}
+.avatar.all img{width:21px}
+.avatar .dot{position:absolute;right:-1px;bottom:-1px;width:10px;height:10px;border-radius:50%;background:var(--green);border:2px solid var(--panel)}
+.empty{color:var(--text3);font-size:13px;padding:4px 10px 10px;line-height:1.5}
+.foot{padding:10px;border-top:.5px solid var(--sep);display:flex;align-items:center;gap:6px}
+.foot .ver{flex:1;color:var(--text3);font-size:11px;padding-left:4px}
+
+/* ---------- main ---------- */
+main{display:flex;flex-direction:column;min-width:0;min-height:0;position:relative;background:var(--bg)}
+header{display:flex;align-items:center;gap:11px;padding:0 20px;height:58px;border-bottom:.5px solid var(--sep);background:var(--panel)}
+header h1{font-size:15px;margin:0;font-weight:600;letter-spacing:-.2px}
+header .sub{color:var(--text2);font-size:12px}
+.bar{display:flex;align-items:center;gap:12px;padding:9px 16px;font-size:13px;background:var(--elev);border-bottom:.5px solid var(--sep)}
+.bar.warn{background:#3A2A12;color:#FFD08A}
+.bar .grow{flex:1}
+.bar button.act{background:var(--blue);color:#fff;border-radius:8px;padding:5px 12px;font-size:13px;font-weight:600}
+.bar button.ghost{color:var(--text2);padding:5px 8px;border-radius:8px}
+.bar[hidden]{display:none}
+
+#msgs{flex:1;overflow-y:auto;padding:14px 20px 6px}
+.day{text-align:center;color:var(--text3);font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin:20px 0 12px}
+.group{display:flex;gap:9px;margin-top:10px;align-items:flex-end}
+.group.mine{flex-direction:row-reverse}
+.group .spacer{width:30px;flex:none}
+.group .avatar{width:30px;height:30px;font-size:12px}
+.group .body{display:flex;flex-direction:column;align-items:flex-start;gap:2px;max-width:min(620px,74%);min-width:0}
+.group.mine .body{align-items:flex-end}
+.meta{font-size:11.5px;color:var(--text3);padding:0 6px 2px}
+.meta b{font-weight:600;color:var(--text2)}
+.row{display:flex;align-items:center;gap:6px;max-width:100%}
+.group.mine .row{flex-direction:row-reverse}
+.bubble{background:var(--elev);padding:7px 13px;border-radius:var(--radius);white-space:pre-wrap;overflow-wrap:anywhere;font-size:14.5px}
+.mine .bubble{background:var(--blue);color:#fff}
+.bubble a{color:inherit;text-decoration:underline;text-underline-offset:2px}
+.bubble.gone{background:transparent;border:1px dashed var(--sep);color:var(--text3);font-style:italic;font-size:13.5px}
+.more{opacity:0;color:var(--text3);border-radius:50%;padding:4px;flex:none}
+.row:hover .more,.more:focus-visible{opacity:1}
+.more:hover{background:rgba(120,120,128,.2);color:var(--text)}
+
+/* files, photos, videos, stickers */
+.file{display:flex;align-items:center;gap:11px;white-space:normal}
+.file .ficon{width:34px;height:40px;border-radius:7px;background:rgba(255,255,255,.16);display:grid;place-items:center;font-size:9.5px;font-weight:700;flex:none;text-transform:uppercase;letter-spacing:.03em}
+.fname{font-weight:600;overflow-wrap:anywhere;font-size:14px}
+.fsub{font-size:12px;opacity:.75}
+.acts{display:flex;gap:6px;margin-top:5px;flex-wrap:wrap}
+.acts button{background:rgba(255,255,255,.14);border-radius:7px;padding:3px 10px;font-size:12px;font-weight:500}
+.acts button:hover{background:rgba(255,255,255,.24)}
+.bubble.media{padding:4px;width:fit-content;max-width:100%}
+.media img,.media video{display:block;border-radius:14px;max-height:360px;background:#000}
+.media img{cursor:zoom-in;max-width:340px}
+.media video{width:380px}
+.media .cap{display:flex;align-items:center;gap:8px;padding:6px 8px 3px;font-size:12px;opacity:.8}
+.media .cap span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.media .cap button{padding:2px 7px;border-radius:6px;font-size:12px}
+.media .cap button:hover{background:rgba(255,255,255,.18)}
+.missing{padding:14px 12px;font-size:12px;opacity:.8}
+.bubble.stickerwrap,.mine .bubble.stickerwrap{padding:0;background:transparent}
+img.sticker{width:128px;height:128px;object-fit:contain;display:block}
+.intro{margin:auto;max-width:400px;text-align:center;color:var(--text2);padding:40px 20px;font-size:13.5px;line-height:1.55}
+.intro img{width:60px;opacity:.75;margin-bottom:14px}
+.intro strong{display:block;color:var(--text);font-size:16px;font-weight:600;margin-bottom:6px}
+
+/* ---------- composer ---------- */
+.composer{padding:8px 20px 16px;position:relative}
+.note{font-size:12.5px;color:var(--orange);padding:0 6px 8px}
+.status{font-size:12.5px;color:var(--text2);padding:0 6px 8px;display:flex;align-items:center;gap:10px}
+.status[hidden]{display:none}
+.status progress{flex:1;max-width:200px;height:5px}
+#transfers{display:flex;flex-direction:column;gap:6px;padding-bottom:8px}
+.tr{display:grid;grid-template-columns:1fr auto;gap:3px 12px;align-items:center;background:var(--panel2);border-radius:12px;padding:9px 13px;font-size:13px}
+.tr .t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tr .pct{color:var(--text2);font-size:12px;font-variant-numeric:tabular-nums}
+.tr progress{grid-column:1/-1;width:100%;height:4px}
+.tr.failed .pct{color:var(--red)}
+progress{appearance:none;border:0;border-radius:4px;overflow:hidden;background:var(--elev2)}
+progress::-webkit-progress-bar{background:var(--elev2)}
+progress::-webkit-progress-value{background:var(--blue)}
+.box{display:flex;align-items:flex-end;gap:2px;background:var(--panel2);border:.5px solid var(--sep);border-radius:22px;padding:5px 6px}
+.box:focus-within{border-color:var(--blue)}
+textarea{flex:1;border:0;background:transparent;resize:none;padding:8px 6px;max-height:150px;outline:none;font-size:14.5px}
+.send{background:var(--blue);color:#fff;border-radius:50%;width:32px;height:32px;display:grid;place-items:center;margin:0 1px 1px}
+.send:hover{background:var(--blue-press)}
+.send:disabled{background:var(--elev2);color:var(--text3);cursor:default}
+.drop{position:absolute;inset:8px;border:2px dashed var(--blue);border-radius:16px;background:rgba(10,132,255,.08);
+  display:none;place-items:center;font-size:15px;font-weight:600;pointer-events:none}
+main.dragging .drop{display:grid}
+
+/* ---------- sticker & GIF picker ---------- */
+.picker{position:absolute;bottom:calc(100% - 4px);left:20px;width:min(392px,calc(100% - 40px));height:432px;background:var(--panel2);
+  border:.5px solid var(--sep);border-radius:16px;box-shadow:0 18px 50px rgba(0,0,0,.6);display:flex;flex-direction:column;overflow:hidden;z-index:6}
+.picker[hidden]{display:none}
+.ptabs{display:flex;align-items:center;gap:2px;padding:8px 8px 0;border-bottom:.5px solid var(--sep)}
+.ptabs [role=tab]{padding:8px 13px;border-bottom:2px solid transparent;color:var(--text2);font-weight:600;font-size:13.5px}
+.ptabs [role=tab][aria-selected=true]{color:var(--text);border-bottom-color:var(--blue)}
+.ptabs .grow{flex:1}
+.ppane{flex:1;overflow-y:auto;padding:4px 12px 14px}
+.ppane[hidden]{display:none}
+.plabel{display:flex;align-items:center;justify-content:space-between;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);padding:14px 2px 7px}
+.link{color:var(--blue);font-size:12px;font-weight:600;text-transform:none;letter-spacing:0}
+.sgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.cell{position:relative}
+.cell .pick{border-radius:12px;width:100%;padding:4px;aspect-ratio:1}
+.cell .pick:hover{background:rgba(120,120,128,.18)}
+.sgrid img{width:100%;height:100%;object-fit:contain}
+.cell .rm{position:absolute;top:-2px;right:-2px;display:none;width:20px;height:20px;border-radius:50%;background:var(--elev2);font-size:11px;line-height:1;color:var(--text)}
+.cell:hover .rm{display:block}
+.ggrid{columns:3;column-gap:6px}
+.ggrid .cell{break-inside:avoid;margin-bottom:6px}
+.ggrid .pick{padding:0;background:var(--elev);border-radius:10px;overflow:hidden;display:block;aspect-ratio:auto}
+.ggrid img{width:100%;display:block}
+.pnote{color:var(--text3);font-size:12.5px;padding:6px 2px 10px;line-height:1.5}
+.field{width:100%;padding:9px 12px;border:.5px solid var(--sep);border-radius:10px;background:var(--panel);font-size:14px}
+.setup{background:var(--panel);border-radius:12px;padding:12px;margin-top:10px;font-size:13px}
+.setup p{margin:0 0 9px;color:var(--text2);line-height:1.5}
+.setup .r{display:flex;gap:6px}
+.setup .r .field{flex:1;min-width:0}
+.giphy{font-size:10px;color:var(--text3);text-align:right;padding-top:10px;letter-spacing:.04em}
+
+/* ---------- menus, sheets, toasts ---------- */
+.menu{position:fixed;z-index:30;background:var(--elev);border-radius:12px;padding:5px;min-width:190px;box-shadow:0 16px 44px rgba(0,0,0,.65)}
+.menu[hidden]{display:none}
+.menu button{display:block;width:100%;text-align:left;padding:8px 11px;border-radius:8px;font-size:13.5px}
+.menu button:hover{background:rgba(120,120,128,.24)}
+.menu button.danger{color:var(--red)}
+.menu hr{border:0;border-top:.5px solid var(--sep);margin:5px 2px}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;place-items:center;z-index:20;padding:20px}
+.overlay.show{display:grid}
+.sheet{background:var(--panel2);border-radius:16px;padding:22px;width:min(470px,100%);max-height:86vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,.7)}
+.sheet h2{margin:0 0 4px;font-size:18px;font-weight:650;letter-spacing:-.3px}
+.sheet p{margin:0 0 14px;color:var(--text2);font-size:13px;line-height:1.5}
+.sheet .grp{background:var(--panel);border-radius:12px;padding:0;margin-bottom:14px;overflow:hidden}
+.sheet .item{display:flex;align-items:center;gap:12px;padding:12px 14px;font-size:14px;width:100%;text-align:left}
+.sheet .item + .item{border-top:.5px solid var(--sep)}
+.sheet .item:hover{background:rgba(120,120,128,.1)}
+.sheet .grow{flex:1}
+.sheet .item .val{color:var(--text2);font-size:12.5px}
+.sheet .item.danger{color:var(--red)}
+.sheet label.item{cursor:pointer}
+.sheet .stack{padding:13px 14px}
+.sheet .stack .field{margin-top:9px}
+.sheet .stack .ttl{font-weight:600}
+.sheet .hint{color:var(--text3);font-size:12px;line-height:1.5;margin-top:8px}
+.sheet .r{display:flex;gap:8px;justify-content:flex-end;margin-top:10px}
+.btn{background:var(--blue);color:#fff;border-radius:10px;padding:9px 16px;font-weight:600;font-size:14px}
+.btn.sec{background:var(--elev);color:var(--text)}
+.btn:disabled{opacity:.5;cursor:default}
+.err{color:var(--red);font-size:12.5px;min-height:17px;margin-top:6px}
+input[type=checkbox]{accent-color:var(--blue);width:17px;height:17px}
+#viewer{background:rgba(0,0,0,.94);cursor:zoom-out}
+#viewer img{max-width:94vw;max-height:86vh;border-radius:10px}
+#viewer .vbar{position:fixed;top:16px;right:18px;display:flex;gap:8px}
+#viewer .vbar button{background:rgba(120,120,128,.3);color:#fff;border-radius:9px;padding:7px 13px;font-size:13px}
+.toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);background:var(--elev);color:var(--text);padding:10px 18px;border-radius:12px;
+  font-size:13.5px;opacity:0;transition:opacity .18s;pointer-events:none;max-width:70vw;z-index:40;box-shadow:0 12px 32px rgba(0,0,0,.5)}
+.toast.show{opacity:1}
+@media (max-width:760px){body{grid-template-columns:1fr}aside{display:none}.media img{max-width:230px}.media video{width:250px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<aside>
+  <div class="brand"><img src="/w.png" alt=""><b>Wild Link</b></div>
+  <div class="me">
+    <div class="avatar" id="meAvatar">?</div>
+    <div class="who"><div class="name" id="meName">…</div><div class="sub" id="meIp"></div></div>
+    <button class="icon" id="editName" title="Change your name" aria-label="Change your name">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+    </button>
+  </div>
+  <nav class="list" id="list" aria-label="Conversations"></nav>
+  <div class="foot">
+    <span class="ver" id="ver"></span>
+    <button class="icon" id="settingsBtn" title="Settings" aria-label="Settings">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.56V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.11-1.56 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.56-1H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.65 8.6a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34H9a1.7 1.7 0 0 0 1-1.56V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.56 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87V9a1.7 1.7 0 0 0 1.56 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1z"/></svg>
+    </button>
+  </div>
+</aside>
+
+<main id="main">
+  <div class="bar warn" id="banner" hidden><span class="grow">Lost connection to Wild Link. Reopen the app to reconnect.</span></div>
+  <div class="bar" id="updateBar" hidden>
+    <span class="grow" id="updateText"></span>
+    <button class="act" id="updateNow">Update now</button>
+    <button class="ghost" id="updateLater">Later</button>
+  </div>
+  <header>
+    <div class="avatar all" id="hAvatar"><img src="/w.png" alt=""></div>
+    <div><h1 id="hTitle">Everyone</h1><div class="sub" id="hSub"></div></div>
+  </header>
+  <div id="msgs"></div>
+  <div class="composer">
+    <div class="note" id="note" hidden></div>
+    <div class="picker" id="picker" hidden>
+      <div class="ptabs" role="tablist">
+        <button role="tab" id="tabStickers" aria-selected="true">Stickers</button>
+        <button role="tab" id="tabGifs" aria-selected="false">GIFs</button>
+        <span class="grow"></span>
+        <button class="icon" id="pClose" aria-label="Close">&#x2715;</button>
+      </div>
+      <div class="ppane" id="paneStickers">
+        <div class="plabel">Wild Link pack</div>
+        <div class="sgrid" id="builtinGrid"></div>
+        <div class="plabel">My stickers <button class="link" id="addSticker">Add image</button></div>
+        <div class="sgrid" id="myStickers"></div>
+      </div>
+      <div class="ppane" id="paneGifs" hidden>
+        <input class="field" id="gifQ" type="search" placeholder="Search GIPHY" autocomplete="off" style="margin-top:10px">
+        <div class="setup" id="gifSetup" hidden>
+          <p id="gifSetupMsg">To search GIFs, paste a free GIPHY API key. You can create one in a minute at <a href="https://developers.giphy.com/dashboard/" target="_blank" rel="noopener">developers.giphy.com</a>.</p>
+          <div class="r"><input class="field" id="gifKey" placeholder="GIPHY API key" autocomplete="off"><button class="btn" id="gifKeySave">Save</button></div>
+        </div>
+        <div class="plabel">My GIFs <button class="link" id="addGif">Add GIF</button></div>
+        <div class="ggrid" id="myGifs"></div>
+        <div id="giphyBlock">
+          <div class="plabel" id="gifResultsLabel">Trending</div>
+          <div class="pnote" id="gifMsg" hidden></div>
+          <div class="ggrid" id="gifResults"></div>
+          <div class="giphy">Powered by GIPHY</div>
+        </div>
+      </div>
+    </div>
+    <div id="transfers"></div>
+    <div class="status" id="status" hidden><span id="statusText"></span><progress id="prog" max="100" value="0"></progress></div>
+    <div class="box">
+      <button class="icon" id="attachMedia" title="Send photos or videos" aria-label="Send photos or videos">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="9" cy="9" r="1.8"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></svg>
+      </button>
+      <button class="icon" id="attach" title="Send a file" aria-label="Send a file">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m21.4 11.1-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5"/></svg>
+      </button>
+      <button class="icon" id="pickerBtn" title="Stickers and GIFs" aria-label="Stickers and GIFs" aria-expanded="false">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5s1.3 1.8 3.5 1.8 3.5-1.8 3.5-1.8"/><circle cx="9" cy="10" r=".8" fill="currentColor"/><circle cx="15" cy="10" r=".8" fill="currentColor"/></svg>
+      </button>
+      <input type="file" id="file" multiple hidden>
+      <input type="file" id="media" multiple accept="image/*,video/*" hidden>
+      <input type="file" id="stickerFile" accept="image/png,image/jpeg,image/webp,image/gif" multiple hidden>
+      <input type="file" id="gifFile" accept="image/gif" multiple hidden>
+      <textarea id="input" rows="1" placeholder="Message"></textarea>
+      <button class="send" id="send" aria-label="Send">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="drop">Drop photos, videos or files to send</div>
+</main>
+
+<div class="menu" id="menu" hidden></div>
+
+<div class="overlay" id="nameDlg"><div class="sheet" role="dialog" aria-labelledby="nameTitle">
+  <h2 id="nameTitle">What's your name?</h2>
+  <p>Colleagues on this network see you by this name.</p>
+  <input class="field" id="nameInput" maxlength="40" placeholder="e.g. Vatsal — Wildmind" autocomplete="off">
+  <div class="err" id="nameErr"></div>
+  <div class="r"><button class="btn sec" id="nameCancel">Cancel</button><button class="btn" id="nameSave">Save</button></div>
+</div></div>
+
+<div class="overlay" id="settings"><div class="sheet" role="dialog" aria-labelledby="setTitle">
+  <h2 id="setTitle">Settings</h2>
+  <p id="setSub"></p>
+
+  <div class="grp">
+    <label class="item" id="startupRow" hidden><span class="grow" id="startupText">Start with Windows</span><input type="checkbox" id="startup"></label>
+    <button class="item" id="openFolder"><span class="grow">Open shared files</span><span class="val">Downloads</span></button>
+  </div>
+
+  <div class="grp">
+    <div class="stack">
+      <div class="ttl">Updates</div>
+      <div class="hint" id="updStatus">Wild Link checks here for new versions. A GitHub repository (owner/name), a web address, or a shared folder all work.</div>
+      <input class="field" id="updURL" placeholder="your-org/wildlink   ·   https://…/update.json   ·   \\SERVER\Share\update.json" autocomplete="off">
+      <div class="r"><button class="btn sec" id="updCheck">Check now</button><button class="btn" id="updSave">Save</button></div>
+    </div>
+  </div>
+
+  <div class="grp">
+    <div class="stack">
+      <div class="ttl">Add someone by IP address</div>
+      <div class="hint">Use this if a colleague doesn't appear automatically, for example on another subnet. They need Wild Link open too.</div>
+      <input class="field" id="ipInput" placeholder="192.168.1.20" autocomplete="off">
+      <div class="r"><button class="btn sec" id="ipCheck">Test connection</button><button class="btn" id="ipAdd">Add</button></div>
+      <div class="hint" id="ipResult"></div>
+    </div>
+  </div>
+
+  <div class="grp">
+    <button class="item danger" id="quit"><span class="grow">Quit Wild Link</span></button>
+  </div>
+  <div class="r"><button class="btn sec" id="setClose">Done</button></div>
+</div></div>
+
+<div class="overlay" id="viewer" role="dialog" aria-label="Photo">
+  <div class="vbar"><button id="vOpen">Open</button><button id="vFolder">Show in folder</button><button id="vClose">Close</button></div>
+  <img id="vImg" alt="">
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+const S = { me:null, peers:{}, msgs:[], cur:'all', unread:{}, stickers:[], stickerLabels:{}, update:null, dismissed:null };
+const IMG = ['jpg','jpeg','png','gif','webp','bmp','avif','jfif'];
+const VID = ['mp4','webm','mov','m4v','ogv'];
+let audioCtx, stick = true, ctx = {};
+
+const hue = s => { let h=0; for (const c of (s||'')) h=(h*31+c.charCodeAt(0))%360; return h; };
+const initials = n => (n||'?').trim().split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase() || '?';
+const esc = s => (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const linkify = s => esc(s).replace(/\bhttps?:\/\/[^\s<]+/g, u => `<a href="${u}" target="_blank" rel="noopener">${u}</a>`);
+const fmtSize = n => n<1024? n+' B' : n<1048576? (n/1024).toFixed(0)+' KB' : n<1073741824? (n/1048576).toFixed(1)+' MB' : (n/1073741824).toFixed(2)+' GB';
+const fmtEta = s => s<60? `${s}s` : s<3600? `${Math.round(s/60)} min` : `${(s/3600).toFixed(1)} h`;
+const fmtTime = ts => new Date(ts).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'});
+const dayLabel = ts => { const d=new Date(ts), t=new Date(), y=new Date(); y.setDate(t.getDate()-1);
+  if (d.toDateString()===t.toDateString()) return 'Today'; if (d.toDateString()===y.toDateString()) return 'Yesterday';
+  return d.toLocaleDateString([], {weekday:'long', day:'numeric', month:'long'}); };
+const extOf = n => (n||'').includes('.') ? n.split('.').pop().toLowerCase() : '';
+const kindOf = n => IMG.includes(extOf(n)) ? 'image' : VID.includes(extOf(n)) ? 'video' : 'file';
+const fileURL = saved => '/files/' + saved.split('/').map(encodeURIComponent).join('/');
+const convOf = m => m.to==='all' ? 'all' : (m.from===S.me?.id ? m.to : m.from);
+const wIcon = () => { const d=document.createElement('div'); d.className='avatar all'; d.innerHTML='<img src="/w.png" alt="">'; return d; };
+function avatarEl(name,id,online){ const d=document.createElement('div'); d.className='avatar'; d.style.setProperty('--h',hue(id||name));
+  d.textContent=initials(name); if(online){const s=document.createElement('span'); s.className='dot'; d.append(s);} return d; }
+function toast(t){ const el=$('toast'); el.textContent=t; el.classList.add('show'); clearTimeout(toast.t); toast.t=setTimeout(()=>el.classList.remove('show'),3600); }
+async function api(url, body){
+  const r=await fetch(url,{method:'POST', body: body? JSON.stringify(body):undefined, headers:{'Content-Type':'application/json'}});
+  if (!r.ok) throw new Error((await r.text()).trim() || ('Error '+r.status));
+  return r;
+}
+const getJSON = async url => { const r=await fetch(url); if(!r.ok) throw new Error((await r.text()).trim()); return r.json(); };
+const openFile = saved => api('/api/open?file='+encodeURIComponent(saved)).catch(e=>toast(e.message));
+const openFolder = () => api('/api/open').catch(e=>toast(e.message));
+
+/* ---------- sidebar & header ---------- */
+function renderList(){
+  const list=$('list'); list.innerHTML='';
+  const mk=(id,label,avatar,offline)=>{ const b=document.createElement('button'); b.className='conv'+(offline?' offline':'');
+    b.setAttribute('aria-current', S.cur===id); b.append(avatar);
+    const l=document.createElement('span'); l.className='label'; l.textContent=label; b.append(l);
+    if (S.unread[id]) { const u=document.createElement('span'); u.className='badge'; u.textContent=S.unread[id]; b.append(u); }
+    b.onclick=()=>openConv(id); return b; };
+  list.append(mk('all','Everyone',wIcon()));
+  const peers=Object.values(S.peers).sort((a,b)=>(b.online-a.online)||a.name.localeCompare(b.name));
+  const on=peers.filter(p=>p.online), off=peers.filter(p=>!p.online);
+  const sec=t=>{const d=document.createElement('div'); d.className='section'; d.textContent=t; list.append(d);};
+  sec(`Online (${on.length})`);
+  if (!on.length){ const e=document.createElement('div'); e.className='empty';
+    e.textContent='Nobody else is online yet. Colleagues appear here when they open Wild Link on this network.'; list.append(e); }
+  on.forEach(p=>list.append(mk(p.id,p.name,avatarEl(p.name,p.id,true))));
+  if (off.length){ sec('Offline'); off.forEach(p=>list.append(mk(p.id,p.name,avatarEl(p.name,p.id,false),true))); }
+  const total=Object.values(S.unread).reduce((a,b)=>a+b,0);
+  document.title = total ? `(${total}) Wild Link` : 'Wild Link';
+}
+
+function renderHeader(){
+  const hd=document.querySelector('header'), note=$('note'), old=$('hAvatar');
+  let av;
+  if (S.cur==='all'){
+    av=wIcon(); $('hTitle').textContent='Everyone';
+    const n=Object.values(S.peers).filter(p=>p.online).length;
+    $('hSub').textContent = n===1 ? 'Goes to the 1 other person online' : n ? `Goes to all ${n} people online` : 'Nobody else is online right now';
+    note.hidden=!!n; note.textContent='Messages sent now won\u2019t reach anyone.';
+  } else {
+    const p=S.peers[S.cur]||{name:'Unknown'};
+    av=avatarEl(p.name,S.cur,false); $('hTitle').textContent=p.name;
+    $('hSub').textContent = p.online ? `Online · ${p.ip}` : 'Offline';
+    note.hidden=!!p.online; note.textContent=`${p.name} is offline. You can send again once they open Wild Link.`;
+  }
+  av.id='hAvatar'; hd.replaceChild(av, old);
+  const blocked=!note.hidden;
+  $('send').disabled=blocked; $('attach').disabled=blocked; $('attachMedia').disabled=blocked; $('pickerBtn').disabled=blocked;
+  if (blocked) closePicker();
+}
+
+/* ---------- messages ---------- */
+function renderMsgs(){
+  const box=$('msgs'); box.innerHTML=''; ctx={};
+  const msgs=S.msgs.filter(m=>convOf(m)===S.cur);
+  if (!msgs.length){
+    const i=document.createElement('div'); i.className='intro'; i.id='intro';
+    i.innerHTML='<img src="/w.png" alt="">' + (S.cur==='all'
+      ? '<strong>Everyone</strong>Messages here reach everyone with Wild Link open on this network. Share photos, videos, stickers and files.'
+      : '<strong>Private chat</strong>Only the two of you see these messages. Drag photos, videos or files here to send them.');
+    box.append(i); return;
+  }
+  msgs.forEach(appendMsg);
+  box.scrollTop=box.scrollHeight; stick=true;
+}
+
+function appendMsg(m){
+  const box=$('msgs'); $('intro')?.remove();
+  const d=dayLabel(m.ts);
+  if (d!==ctx.day){ const e=document.createElement('div'); e.className='day'; e.textContent=d; box.append(e); ctx.day=d; ctx.from=null; }
+  const mine = m.from===S.me?.id;
+  if (m.from!==ctx.from || m.ts-ctx.ts>5*60e3){
+    const g=document.createElement('div'); g.className='group'+(mine?' mine':'');
+    if (mine){ const sp=document.createElement('div'); sp.className='spacer'; g.append(sp); } else g.append(avatarEl(m.fromName,m.from,false));
+    const body=document.createElement('div'); body.className='body';
+    const meta=document.createElement('div'); meta.className='meta';
+    meta.innerHTML = mine ? esc(fmtTime(m.ts)) : `<b>${esc(m.fromName)}</b> &nbsp;${esc(fmtTime(m.ts))}`;
+    body.append(meta); g.append(body); box.append(g); ctx.body=body;
+  }
+  const row=document.createElement('div'); row.className='row'; row.dataset.id=m.id;
+  row.append(bubble(m, mine));
+  if (!m.deleted){
+    const more=document.createElement('button'); more.className='more'; more.setAttribute('aria-label','Message options');
+    more.innerHTML='<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="19" cy="12" r="1.9"/></svg>';
+    more.onclick=e=>{ e.stopPropagation(); messageMenu(m, mine, more); };
+    row.append(more);
+  }
+  ctx.body.append(row); ctx.from=m.from; ctx.ts=m.ts;
+  if (stick) box.scrollTop=box.scrollHeight;
+}
+
+function bubble(m, mine){
+  const b=document.createElement('div'); b.className='bubble'; b.title=new Date(m.ts).toLocaleString();
+  if (m.deleted){ b.className='bubble gone'; b.textContent='This message was deleted'; return b; }
+  if (m.sticker){
+    b.className='bubble media stickerwrap';
+    const i=document.createElement('img'); i.className='sticker';
+    i.src = m.sticker==='custom' ? fileURL(m.savedAs||'') : '/stickers/'+encodeURIComponent(m.sticker)+'.svg';
+    i.alt=(S.stickerLabels[m.sticker]||'Sticker')+' sticker';
+    i.onload=()=>{ if(stick) $('msgs').scrollTop=$('msgs').scrollHeight; };
+    i.onerror=()=>{ b.className='bubble'; b.textContent=m.text||'Sticker'; };
+    b.append(i); return b;
+  }
+  if (!m.file){ b.innerHTML=linkify(m.text||''); return b; }
+  const kind=kindOf(m.file);
+  if (m.savedAs && kind!=='file'){
+    b.classList.add('media');
+    const el=document.createElement(kind==='image'?'img':'video');
+    el.src=fileURL(m.savedAs);
+    if (kind==='image'){ el.alt=m.file; el.loading='lazy'; el.onclick=()=>viewImage(m); }
+    else { el.controls=true; el.preload='metadata'; el.playsInline=true; }
+    el.addEventListener(kind==='image'?'load':'loadedmetadata', ()=>{ if(stick) $('msgs').scrollTop=$('msgs').scrollHeight; });
+    el.addEventListener('error', ()=>{ const x=document.createElement('div'); x.className='missing';
+      x.textContent = kind==='video' ? 'This video format can\u2019t play here. Use Open to watch it in your video player.' : 'Photo not available. It may have been moved or deleted.';
+      el.replaceWith(x); });
+    const cap=document.createElement('div'); cap.className='cap';
+    const nm=document.createElement('span'); nm.textContent=`${m.file} · ${fmtSize(m.fileSize||0)}`;
+    const ob=document.createElement('button'); ob.textContent='Open'; ob.onclick=()=>openFile(m.savedAs);
+    cap.append(nm,ob); b.append(el,cap); return b;
+  }
+  b.innerHTML=`<div class="file"><div class="ficon">${esc(extOf(m.file).slice(0,4)||'file')}</div><div><div class="fname"></div><div class="fsub">${fmtSize(m.fileSize||0)}${mine?' · sent':''}</div><div class="acts"></div></div></div>`;
+  b.querySelector('.fname').textContent=m.file;
+  if (m.savedAs){
+    const acts=b.querySelector('.acts');
+    const o=document.createElement('button'); o.textContent='Open'; o.onclick=()=>openFile(m.savedAs);
+    const f=document.createElement('button'); f.textContent='Show in folder'; f.onclick=openFolder;
+    acts.append(o,f);
+  }
+  return b;
+}
+
+/* message options */
+function messageMenu(m, mine, anchor){
+  const menu=$('menu'); menu.innerHTML='';
+  const add=(label, fn, cls)=>{ const b=document.createElement('button'); b.textContent=label; if(cls) b.className=cls;
+    b.onclick=()=>{ menu.hidden=true; fn(); }; menu.append(b); };
+  if (m.text && !m.file && !m.sticker) add('Copy text', ()=>navigator.clipboard?.writeText(m.text).then(()=>toast('Copied')).catch(()=>{}));
+  if (m.savedAs){
+    add('Open', ()=>openFile(m.savedAs));
+    add('Show in folder', openFolder);
+    const gif = extOf(m.file)==='gif';
+    if (kindOf(m.file)==='image' || m.sticker==='custom')
+      add(gif?'Save to My GIFs':'Save as sticker', ()=>saveTo(gif?'gifs':'stickers', m.savedAs, gif?'Added to My GIFs':'Added to My stickers'));
+  }
+  if (menu.children.length) menu.append(document.createElement('hr'));
+  add('Delete for me', ()=>del(m.id,'me'), 'danger');
+  if (mine) add('Delete for everyone', ()=>del(m.id,'all'), 'danger');
+  menu.hidden=false;
+  const r=anchor.getBoundingClientRect(), mh=menu.offsetHeight, mw=menu.offsetWidth;
+  menu.style.top=Math.max(8, Math.min(window.innerHeight-mh-8, r.bottom+6))+'px';
+  menu.style.left=Math.max(8, Math.min(window.innerWidth-mw-8, r.left-mw+r.width))+'px';
+}
+async function del(id, scope){ try { await api('/api/delete',{id,scope}); } catch(e){ toast(e.message); } }
+document.addEventListener('click',()=>{ $('menu').hidden=true; });
+document.addEventListener('scroll',()=>{ $('menu').hidden=true; }, true);
+
+function viewImage(m){ $('vImg').src=fileURL(m.savedAs); $('vImg').alt=m.file; $('viewer').classList.add('show');
+  $('vOpen').onclick=e=>{ e.stopPropagation(); openFile(m.savedAs); }; $('vFolder').onclick=e=>{ e.stopPropagation(); openFolder(); }; }
+$('viewer').onclick=()=>$('viewer').classList.remove('show');
+
+function openConv(id){ S.cur=id; delete S.unread[id]; renderList(); renderHeader(); renderMsgs(); $('input').focus(); }
+$('msgs').addEventListener('scroll',()=>{ const b=$('msgs'); stick = b.scrollHeight-b.scrollTop-b.clientHeight < 80; });
+
+/* ---------- server events ---------- */
+function connect(){
+  const es=new EventSource('/api/events');
+  es.onopen=()=>{ $('banner').hidden=true; reportFocus(); };
+  es.onerror=()=>{ $('banner').hidden=false; };
+  es.onmessage=e=>{
+    const ev=JSON.parse(e.data);
+    if (ev.type==='me'){
+      S.me=ev; $('meName').textContent=ev.name||'Set your name';
+      $('meIp').textContent=(ev.ips||[]).join(', ');
+      const a=$('meAvatar'); a.style.setProperty('--h',hue(ev.id)); a.textContent=initials(ev.name);
+      $('ver').textContent='Version '+(ev.version||'');
+      $('startupRow').hidden = ev.os!=='windows' && ev.os!=='darwin';
+      $('startupText').textContent = ev.os==='darwin' ? 'Open at login' : 'Start with Windows';
+      $('startup').checked=!!ev.startup;
+      $('updURL').value=ev.updateURL||'';
+      $('setSub').textContent = `Wild Link ${ev.version} · ${(ev.ips||[]).join(', ')} · port 47821`;
+      if (!ev.name) showName(true);
+    } else if (ev.type==='peers'){
+      const next={}; ev.peers.forEach(p=>next[p.id]=p);
+      for (const [id,p] of Object.entries(S.peers)) if(!next[id]) next[id]={...p,online:false};
+      S.peers=next; renderList(); renderHeader(); peerVersionHint();
+    } else if (ev.type==='history'){
+      S.msgs=ev.msgs||[]; renderList(); renderHeader(); renderMsgs();
+    } else if (ev.type==='msg'){
+      const m=ev.msg; S.msgs.push(m); const c=convOf(m);
+      if (m.from===S.me?.id) stick=true;
+      else {
+        if (!S.peers[m.from]) S.peers[m.from]={id:m.from,name:m.fromName,online:true};
+        const here = !document.hidden && document.hasFocus() && c===S.cur;
+        if (!here) S.unread[c]=(S.unread[c]||0)+1;
+        beep();
+      }
+      if (c===S.cur) appendMsg(m);
+      renderList();
+    } else if (ev.type==='deleted'){
+      const i=S.msgs.findIndex(m=>m.id===ev.ref);
+      if (i>=0){
+        if (ev.scope==='me') S.msgs.splice(i,1);
+        else { const m=S.msgs[i]; m.deleted=true; m.text=''; m.file=''; m.savedAs=''; m.sticker=''; }
+        renderMsgs();
+      }
+    } else if (ev.type==='transfer'){
+      showTransfer(ev);
+    } else if (ev.type==='update'){
+      S.update=ev.update; showUpdate();
+    }
+  };
+}
+function beep(){
+  try { audioCtx ||= new AudioContext(); const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+    o.frequency.value=880; g.gain.setValueAtTime(.06,audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+.25);
+    o.connect(g).connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime+.26); } catch {}
+}
+
+/* Tell the app whether this window is in front, so it knows when to show a
+   desktop notification instead of relying on the page. */
+function reportFocus(){
+  const focused = !document.hidden && document.hasFocus();
+  fetch('/api/focus',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({focused})}).catch(()=>{});
+  if (focused && S.unread[S.cur]){ delete S.unread[S.cur]; renderList(); }
+}
+window.addEventListener('focus',reportFocus); window.addEventListener('blur',reportFocus);
+document.addEventListener('visibilitychange',reportFocus);
+window.addEventListener('pagehide',()=>{ try{ navigator.sendBeacon('/api/focus', new Blob([JSON.stringify({focused:false})],{type:'application/json'})); }catch{} });
+setInterval(reportFocus, 30000);
+
+/* ---------- updates ---------- */
+function showUpdate(){
+  const u=S.update;
+  if (!u || S.dismissed===u.version){ $('updateBar').hidden=true; peerVersionHint(); return; }
+  $('updateText').textContent = `Wild Link ${u.version} is available` + (u.notes? ' — '+u.notes : '');
+  $('updateNow').hidden=false; $('updateBar').hidden=false;
+}
+function peerVersionHint(){
+  if (S.update) return;
+  const newer=Object.values(S.peers).filter(p=>p.version && cmpVer(p.version, S.me?.version||'0')>0)
+    .sort((a,b)=>cmpVer(b.version,a.version))[0];
+  if (!newer || S.dismissed==='peer'){ $('updateBar').hidden=true; return; }
+  $('updateText').textContent = `${newer.name} is running Wild Link ${newer.version}, you have ${S.me?.version}.`;
+  $('updateNow').hidden=true; $('updateBar').hidden=false;
+}
+const cmpVer=(a,b)=>{ const x=(a||'').split('.').map(Number), y=(b||'').split('.').map(Number);
+  for(let i=0;i<4;i++){ const d=(x[i]||0)-(y[i]||0); if(d) return d; } return 0; };
+$('updateLater').onclick=()=>{ S.dismissed = S.update ? S.update.version : 'peer'; $('updateBar').hidden=true; };
+$('updateNow').onclick=async()=>{
+  $('updateNow').disabled=true; $('updateText').textContent='Downloading the update…';
+  try { await api('/api/update/download'); $('updateText').textContent='The installer has opened. Follow it to finish updating.'; }
+  catch(e){ toast(e.message); showUpdate(); }
+  $('updateNow').disabled=false;
+};
+
+/* ---------- transfers ---------- */
+const trEls={};
+function showTransfer(t){
+  let el=trEls[t.id];
+  if (!el){ el=document.createElement('div'); el.className='tr';
+    el.innerHTML='<span class="t"></span><span class="pct"></span><progress max="100" value="0"></progress>';
+    $('transfers').append(el); trEls[t.id]=el; }
+  const pct=t.size>0 ? Math.min(100, Math.floor(t.done*100/t.size)) : 0;
+  const k=kindOf(t.name), what = k==='image'?'photo':k==='video'?'video':'file';
+  const verb = t.dir==='in' ? (t.state==='done'?'Received':'Receiving') : (t.state==='done'?'Sent':'Sending');
+  el.querySelector('.t').textContent=`${verb} ${what} ${t.name} ${t.dir==='in'?'from':'to'} ${t.who}`;
+  const rate = t.rate>0 ? ` · ${fmtSize(t.rate)}/s` : '';
+  const eta = t.eta>0 ? ` · ${fmtEta(t.eta)} left` : '';
+  el.querySelector('.pct').textContent = t.state==='failed' ? 'Interrupted, retrying…'
+    : t.state==='done' ? fmtSize(t.fileSize||t.size)
+    : `${pct}% of ${fmtSize(t.fileSize||t.size)}${rate}${eta}`;
+  el.querySelector('progress').value = t.state==='done' ? 100 : pct;
+  el.classList.toggle('failed', t.state==='failed');
+  if (t.state==='done') setTimeout(()=>{ el.remove(); delete trEls[t.id]; }, 1800);
+}
+
+/* ---------- sending ---------- */
+async function sendText(){
+  const t=$('input').value; if (!t.trim() || $('send').disabled) return;
+  $('send').disabled=true;
+  try { await api('/api/send',{to:S.cur,text:t}); $('input').value=''; autosize(); }
+  catch(e){ toast(e.message); }
+  finally { renderHeader(); $('input').focus(); }
+}
+function upload(f, onProgress){
+  return new Promise((resolve,reject)=>{
+    const x=new XMLHttpRequest();
+    x.open('POST', `/api/sendfile?to=${encodeURIComponent(S.cur)}&name=${encodeURIComponent(f.name)}`);
+    x.upload.onprogress=e=>{ if(e.lengthComputable) onProgress(e.loaded/e.total); };
+    x.onload=()=>{ if (x.status===207){ toast(x.responseText.trim()); resolve(); }
+      else if (x.status<300) resolve(); else reject(new Error(x.responseText.trim()||('Error '+x.status))); };
+    x.onerror=()=>reject(new Error('Couldn\u2019t reach Wild Link. Is it still running?'));
+    x.send(f);
+  });
+}
+let queue=Promise.resolve();
+function sendFiles(files){
+  if ($('attach').disabled){ toast('Nobody to send to right now.'); return; }
+  files.forEach(f=>{ queue=queue.then(async()=>{
+    const st=$('status'), k=kindOf(f.name);
+    st.hidden=false; $('prog').value=0;
+    $('statusText').textContent=`Preparing ${k==='image'?'photo':k==='video'?'video':'file'} ${f.name} (${fmtSize(f.size)})`;
+    try { await upload(f, p=>{ $('prog').value=Math.round(p*100); if(p>=1) st.hidden=true; }); }
+    catch(e){ toast(e.message); }
+    st.hidden=true;
+  }); });
+}
+function autosize(){ const i=$('input'); i.style.height='auto'; i.style.height=Math.min(i.scrollHeight,150)+'px'; }
+
+/* ---------- stickers & GIFs ---------- */
+function cell(src, alt, onPick, onRemove){
+  const c=document.createElement('div'); c.className='cell';
+  const b=document.createElement('button'); b.className='pick'; b.title=alt;
+  const i=document.createElement('img'); i.src=src; i.alt=alt; i.loading='lazy'; b.append(i); b.onclick=onPick; c.append(b);
+  if (onRemove){ const x=document.createElement('button'); x.className='rm'; x.innerHTML='&#x2715;'; x.title='Remove';
+    x.onclick=e=>{ e.stopPropagation(); onRemove(); }; c.append(x); }
+  return c;
+}
+async function loadBuiltin(){
+  try { S.stickers=await getJSON('/stickers/index.json'); } catch { S.stickers=[]; }
+  S.stickers.forEach(s=>S.stickerLabels[s.id]=s.label);
+  const g=$('builtinGrid'); g.innerHTML='';
+  S.stickers.forEach(s=>g.append(cell(`/stickers/${s.id}.svg`, s.label, ()=>pickSticker(s.id))));
+}
+async function loadMine(kind){
+  const grid = kind==='stickers' ? $('myStickers') : $('myGifs');
+  let items=[]; try { items=await getJSON('/api/collection?kind='+kind); } catch {}
+  grid.innerHTML='';
+  if (!items.length){ const e=document.createElement('div'); e.className='pnote';
+    e.textContent = kind==='stickers' ? 'Add your own images, or use “Save as sticker” on any photo in the chat.'
+                                      : 'Add .gif files from this computer, or use “Save to My GIFs” on any GIF in the chat.';
+    grid.append(e); return; }
+  items.forEach(it=>grid.append(cell(`/collection/${kind}/${encodeURIComponent(it.name)}`, it.name,
+    ()=>pickCollection(kind,it.name),
+    async()=>{ await api('/api/collection/remove',{kind,name:it.name}).catch(()=>{}); loadMine(kind); })));
+}
+async function pickSticker(id){ closePicker(); try { await api('/api/sendsticker',{to:S.cur,id}); stick=true; } catch(e){ toast(e.message); } }
+async function pickCollection(kind,name){ closePicker(); try { await api('/api/collection/send',{to:S.cur,kind,name}); stick=true; } catch(e){ toast(e.message); } }
+async function saveTo(kind, savedAs, done){
+  try { await api('/api/collection/save',{kind,savedAs}); toast(done); if(!$('picker').hidden) loadMine(kind); } catch(e){ toast(e.message); }
+}
+async function addToCollection(kind, files){
+  for (const f of files){
+    try { const r=await fetch(`/api/collection/add?kind=${kind}&name=${encodeURIComponent(f.name)}`,{method:'POST',body:f});
+      if(!r.ok) throw new Error((await r.text()).trim()); } catch(e){ toast(e.message); }
+  }
+  loadMine(kind);
+}
+let gifTimer, gifSeq=0;
+const giphyKey = () => S.me?.giphyKey || '';
+function gifMessage(t){ const m=$('gifMsg'); m.hidden=!t; m.textContent=t||''; }
+async function searchGifs(){
+  const key=giphyKey(), q=$('gifQ').value.trim();
+  $('gifSetup').hidden=!!key; $('giphyBlock').hidden=!key; $('gifQ').hidden=!key;
+  if (!key) return;
+  const seq=++gifSeq;
+  $('gifResultsLabel').textContent = q ? 'Results' : 'Trending';
+  const url = q ? `https://api.giphy.com/v1/gifs/search?api_key=${encodeURIComponent(key)}&q=${encodeURIComponent(q)}&limit=30&rating=pg-13`
+                : `https://api.giphy.com/v1/gifs/trending?api_key=${encodeURIComponent(key)}&limit=30&rating=pg-13`;
+  gifMessage('Loading…');
+  try {
+    const r=await fetch(url);
+    if (r.status===401||r.status===403){ gifMessage(''); $('gifSetupMsg').textContent='That GIPHY key didn\u2019t work. Check it and paste it again.'; $('gifSetup').hidden=false; return; }
+    if (!r.ok) throw new Error();
+    const data=(await r.json()).data||[];
+    if (seq!==gifSeq) return;
+    const g=$('gifResults'); g.innerHTML='';
+    gifMessage(data.length ? '' : 'No GIFs found. Try another word.');
+    data.forEach(d=>{
+      const prev=d.images?.fixed_width_small?.url || d.images?.fixed_width?.url; if(!prev) return;
+      g.append(cell(prev, d.title||'GIF', ()=>pickGiphy(d.images?.downsized?.url || d.images?.original?.url, d.title)));
+    });
+  } catch { if (seq===gifSeq) gifMessage('Can\u2019t reach GIPHY. GIF search needs internet on this computer; My GIFs still work offline.'); }
+}
+async function pickGiphy(url, title){
+  closePicker();
+  $('status').hidden=false; $('statusText').textContent='Sending GIF…'; $('prog').removeAttribute('value');
+  try { await api('/api/sendurl',{to:S.cur,url,title:(title||'GIF').replace(/\s+GIF\b.*$/i,'')}); stick=true; }
+  catch(e){ toast(e.message); }
+  $('status').hidden=true; $('prog').value=0;
+}
+function showTab(t){
+  $('tabStickers').setAttribute('aria-selected', t==='stickers'); $('tabGifs').setAttribute('aria-selected', t==='gifs');
+  $('paneStickers').hidden = t!=='stickers'; $('paneGifs').hidden = t!=='gifs';
+  if (t==='gifs'){ loadMine('gifs'); searchGifs(); } else loadMine('stickers');
+}
+function openPicker(){ $('picker').hidden=false; $('pickerBtn').setAttribute('aria-expanded','true');
+  if (!S.stickers.length) loadBuiltin(); showTab($('tabGifs').getAttribute('aria-selected')==='true' ? 'gifs' : 'stickers'); }
+function closePicker(){ $('picker').hidden=true; $('pickerBtn').setAttribute('aria-expanded','false'); }
+
+/* ---------- dialogs ---------- */
+function showName(force){
+  $('nameInput').value=S.me?.name||''; $('nameErr').textContent=''; $('nameCancel').hidden=!!force;
+  $('nameDlg').classList.add('show'); setTimeout(()=>$('nameInput').focus(),30);
+}
+async function saveName(){
+  try { await api('/api/name',{name:$('nameInput').value}); $('nameDlg').classList.remove('show'); }
+  catch(e){ $('nameErr').textContent=e.message; }
+}
+
+/* ---------- wiring ---------- */
+$('send').onclick=sendText;
+$('input').addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); sendText(); }});
+$('input').addEventListener('input',autosize);
+$('input').addEventListener('paste',e=>{
+  const files=[...(e.clipboardData?.files||[])]; if(!files.length) return;
+  e.preventDefault();
+  const stamp=new Date().toISOString().slice(0,19).replace('T',' ').replace(/:/g,'.');
+  sendFiles(files.map((f,i)=> /^image\.\w+$/i.test(f.name) || !f.name
+    ? new File([f], `Screenshot ${stamp}${files.length>1?' ('+(i+1)+')':''}.${(f.type.split('/')[1]||'png').replace('jpeg','jpg')}`, {type:f.type}) : f));
+});
+$('attach').onclick=()=>$('file').click();
+$('attachMedia').onclick=()=>$('media').click();
+$('file').onchange=$('media').onchange=e=>{ sendFiles([...e.target.files]); e.target.value=''; };
+$('pickerBtn').onclick=e=>{ e.stopPropagation(); $('picker').hidden ? openPicker() : closePicker(); };
+$('pClose').onclick=closePicker;
+$('tabStickers').onclick=()=>showTab('stickers'); $('tabGifs').onclick=()=>showTab('gifs');
+$('gifQ').addEventListener('input',()=>{ clearTimeout(gifTimer); gifTimer=setTimeout(searchGifs,350); });
+$('gifKeySave').onclick=async()=>{ const k=$('gifKey').value.trim(); if(!k) return;
+  try { await api('/api/settings',{giphyKey:k}); S.me.giphyKey=k; $('gifKey').value=''; searchGifs(); } catch(e){ toast(e.message); } };
+$('addSticker').onclick=()=>$('stickerFile').click(); $('addGif').onclick=()=>$('gifFile').click();
+$('stickerFile').onchange=e=>{ addToCollection('stickers',[...e.target.files]); e.target.value=''; };
+$('gifFile').onchange=e=>{ addToCollection('gifs',[...e.target.files]); e.target.value=''; };
+$('editName').onclick=()=>showName(false);
+$('nameSave').onclick=saveName; $('nameInput').onkeydown=e=>{ if(e.key==='Enter') saveName(); };
+$('nameCancel').onclick=()=>$('nameDlg').classList.remove('show');
+$('settingsBtn').onclick=()=>$('settings').classList.add('show');
+$('setClose').onclick=()=>$('settings').classList.remove('show');
+$('openFolder').onclick=openFolder;
+$('startup').onchange=e=>api('/api/startup',{enabled:e.target.checked}).catch(err=>{toast(err.message); e.target.checked=!e.target.checked;});
+$('updSave').onclick=async()=>{ try { await api('/api/settings',{updateURL:$('updURL').value}); toast('Update location saved'); } catch(e){ toast(e.message); } };
+$('updCheck').onclick=async()=>{
+  $('updStatus').textContent='Checking…';
+  try { const r=await (await api('/api/update/check')).json();
+    $('updStatus').textContent = r.update ? `Wild Link ${r.update.version} is available.` : `You’re up to date (version ${r.version}).`;
+  } catch(e){ $('updStatus').textContent=e.message; }
+};
+$('ipAdd').onclick=async()=>{ try { await api('/api/addpeer',{ip:$('ipInput').value});
+  $('ipResult').textContent='Added. They appear within a few seconds if Wild Link is open on that computer.'; } catch(e){ $('ipResult').textContent=e.message; } };
+$('ipCheck').onclick=async()=>{
+  $('ipResult').textContent='Testing…';
+  try { const r=await (await fetch('/api/check?ip='+encodeURIComponent($('ipInput').value.trim()),{method:'POST'})).json();
+    $('ipResult').textContent=r.text + (r.detail? ' ('+r.detail+')' : ''); }
+  catch(e){ $('ipResult').textContent='Enter an IPv4 address like 192.168.1.20'; }
+};
+$('quit').onclick=async()=>{ if(confirm('Quit Wild Link? You won\u2019t receive messages until you open it again.')){ await api('/api/quit').catch(()=>{}); window.close(); }};
+$('vClose').onclick=()=>$('viewer').classList.remove('show');
+document.addEventListener('keydown',e=>{ if(e.key!=='Escape') return;
+  $('menu').hidden=true; closePicker();
+  document.querySelectorAll('.overlay.show').forEach(o=>{ if(o.id!=='nameDlg' || !$('nameCancel').hidden) o.classList.remove('show'); });
+});
+document.addEventListener('mousedown',e=>{ if(!$('picker').hidden && !$('picker').contains(e.target) && !$('pickerBtn').contains(e.target)) closePicker(); });
+
+const main=$('main'); let dragDepth=0;
+main.addEventListener('dragenter',e=>{ e.preventDefault(); dragDepth++; main.classList.add('dragging'); });
+main.addEventListener('dragleave',()=>{ if(--dragDepth<=0){ dragDepth=0; main.classList.remove('dragging'); }});
+main.addEventListener('dragover',e=>e.preventDefault());
+main.addEventListener('drop',e=>{ e.preventDefault(); dragDepth=0; main.classList.remove('dragging');
+  if(e.dataTransfer.files.length) sendFiles([...e.dataTransfer.files]); });
+
+loadBuiltin();
+connect();
+</script>
+</body>
+</html>

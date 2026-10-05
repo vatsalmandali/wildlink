@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="240" height="240"><title>Great work</title>
+<defs><filter id="s" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#000" flood-opacity=".22"/></filter></defs>
+<g transform="rotate(-4 120 120)"><rect x="18" y="18" width="204" height="204" rx="48" fill="#F2A900" stroke="#FFFFFF" stroke-width="10" filter="url(#s)"/>
+<polygon points="120.0,42.0 133.5,77.4 171.4,79.3 141.9,103.1 151.7,139.7 120.0,119.0 88.3,139.7 98.1,103.1 68.6,79.3 106.5,77.4" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="8" stroke-linejoin="round"/><circle cx="110" cy="96" r="4" fill="#D99A00"/><circle cx="130" cy="96" r="4" fill="#D99A00"/><path d="M111 106 q9 8 18 0" stroke="#D99A00" stroke-width="4" fill="none" stroke-linecap="round"/>
+<text x="120" y="190" text-anchor="middle" font-family="'Segoe UI Black','Arial Black','Helvetica Neue',Arial,sans-serif" font-weight="900" font-size="30" fill="#FFFFFF" stroke="rgba(0,0,0,.18)" stroke-width="5" paint-order="stroke" letter-spacing="-.5">Great work</text></g></svg>
